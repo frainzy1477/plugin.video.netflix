@@ -98,6 +98,18 @@ def rate_thumb(videoid, rating, track_id_jaw):
     ui.show_notification(common.get_local_string(30045).split('|')[rating])
 
 
+def update_remindme(operation, videoid, trackid):
+    """Call API to update "Remind Me" feature with either add or remove action"""
+    cmd = 'addToRemindMeList' if operation == 'add' else 'removeFromRemindMeList'
+    call_args = {
+        'callpaths': [['videos', videoid.value, cmd]],
+        'params': [trackid],
+        'path': ['videos', videoid.value, 'inRemindMeList']
+    }
+    response = common.make_call('callpath_request', call_args)
+    LOG.debug('update_remindme response: {}', response)
+
+
 @measure_exec_time_decorator()
 def update_my_list(videoid, operation, params):
     """Call API to update my list with either add or remove action"""
@@ -117,7 +129,7 @@ def _update_mylist_cache(videoid, operation, params):
     perpetual_range_start = params.get('perpetual_range_start')
     mylist_identifier = 'mylist'
     if perpetual_range_start and perpetual_range_start != 'None':
-        mylist_identifier += '_' + perpetual_range_start
+        mylist_identifier += f'_{perpetual_range_start}'
     if operation == 'remove':
         try:
             video_list_sorted_data = G.CACHE.get(cache_utils.CACHE_MYLIST, mylist_identifier)

@@ -37,8 +37,8 @@ def convert_to_dash(manifest):
     for video_track in manifest['video_tracks']:
         _convert_video_track(video_track, period, init_length, video_protection_info, has_video_drm_streams, cdn_index)
 
-    common.fix_locale_languages(manifest['audio_tracks'])
-    common.fix_locale_languages(manifest['timedtexttracks'])
+    common.apply_lang_code_changes(manifest['audio_tracks'])
+    common.apply_lang_code_changes(manifest['timedtexttracks'])
 
     has_audio_drm_streams = manifest['audio_tracks'][0].get('hasDrmStreams', False)
 
@@ -75,7 +75,7 @@ def _add_segment_base(representation, init_length):
     ET.SubElement(
         representation,  # Parent
         'SegmentBase',  # Tag
-        indexRange='0-' + str(init_length),
+        indexRange=f'0-{init_length}',
         indexRangeExact='true')
 
 
@@ -111,16 +111,12 @@ def _add_protection_info(adaptation_set, pssh, keyid):
                                             table=TABLE_SESSION)
     if (G.LOCAL_DB.get_value('drm_security_level', '', table=TABLE_SESSION) == 'L1'
             and wv_force_sec_lev == WidevineForceSecLev.DISABLED):
-        # The flag HW_SECURE_CODECS_REQUIRED is mandatory for L1 devices,
-        # if it is set on L3 devices ISA already remove it automatically.
-        # But some L1 devices with non regular Widevine library cause issues then need to be handled
-        robustness_level = 'HW_SECURE_CODECS_REQUIRED'
-    else:
-        robustness_level = ''
-    ET.SubElement(
-        protection,  # Parent
-        'widevine:license',  # Tag
-        robustness_level=robustness_level)
+        # NOTE: This is needed only when on ISA is enabled the Expert setting "Don't use secure decoder if possible"
+        # The flag HW_SECURE_CODECS_REQUIRED is mandatory for L1 devices (if set on L3 devices is ignored)
+        ET.SubElement(
+            protection,  # Parent
+            'widevine:license',  # Tag
+            robustness_level='HW_SECURE_CODECS_REQUIRED')
     if pssh:
         ET.SubElement(protection, 'cenc:pssh').text = pssh
 
@@ -193,7 +189,7 @@ def _determine_video_codec(content_profile):
             return 'dvhe'
         return 'hevc'
     if content_profile.startswith('vp9'):
-        return 'vp9.0.' + content_profile[14:16]
+        return f'vp9.{content_profile[11:12]}'
     return 'h264'
 
 

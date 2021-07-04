@@ -88,12 +88,14 @@ def _play(videoid, is_played_from_strm=False):
 
 def get_inputstream_listitem(videoid):
     """Return a listitem that has all inputstream relevant properties set for playback of the given video_id"""
-    service_url = 'http://127.0.0.1:{}'.format(G.LOCAL_DB.get_value('nf_server_service_port'))
+    service_url = f'http://127.0.0.1:{G.LOCAL_DB.get_value("nf_server_service_port")}'
     manifest_path = MANIFEST_PATH_FORMAT.format(videoid.value)
     list_item = xbmcgui.ListItem(path=service_url + manifest_path, offscreen=True)
     list_item.setContentLookup(False)
     list_item.setMimeType('application/xml+dash')
     list_item.setProperty('IsPlayable', 'true')
+    # Allows the add-on to always have play callbacks also when using the playlist (Kodi versions >= 20)
+    list_item.setProperty('ForceResolvePlugin', 'true')
     try:
         import inputstreamhelper
         is_helper = inputstreamhelper.Helper('mpd', drm='widevine')
@@ -107,7 +109,7 @@ def get_inputstream_listitem(videoid):
         raise Exception(common.get_local_string(30046))
     list_item.setProperty(
         key='inputstream.adaptive.stream_headers',
-        value='user-agent=' + common.get_user_agent())
+        value=f'user-agent={common.get_user_agent()}')
     list_item.setProperty(
         key='inputstream.adaptive.license_type',
         value='com.widevine.alpha')

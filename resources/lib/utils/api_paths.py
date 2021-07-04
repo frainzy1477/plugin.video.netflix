@@ -47,8 +47,8 @@ ART_PARTIAL_PATHS = [
 
 
 VIDEO_LIST_PARTIAL_PATHS = [
-    [['requestId', 'summary', 'title', 'synopsis', 'regularSynopsis', 'evidence', 'queue',
-      'episodeCount', 'info', 'maturity', 'runtime', 'seasonCount', 'availability',
+    [['requestId', 'summary', 'title', 'synopsis', 'regularSynopsis', 'evidence', 'queue', 'inRemindMeList',
+      'episodeCount', 'info', 'maturity', 'runtime', 'seasonCount', 'availability', 'trackIds',
       'releaseYear', 'userRating', 'numSeasonsLabel', 'bookmarkPosition', 'creditsOffset',
       'dpSupplementalMessage', 'watched', 'delivery', 'sequiturEvidence', 'promoVideo']],
     [['genres', 'tags', 'creators', 'directors', 'cast'],
@@ -254,7 +254,8 @@ def reference_path(ref):
     if isinstance(ref, dict):
         return ref['value'] if ref.get('$type') == 'ref' else None
     raise InvalidReferenceError(
-        'Unexpected reference format encountered: {}'.format(ref))
+        f'Unexpected reference format encountered: {ref}'
+    )
 
 
 def _remove_nesting(ref):

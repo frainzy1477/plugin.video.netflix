@@ -28,7 +28,7 @@ if TYPE_CHECKING:  # This variable/imports are used only by the editor, so not a
 class AMVideoEvents(ActionManager):
     """Detect the progress of the played video and send the data to the netflix service"""
 
-    SETTING_ID = 'ProgressManager_enabled'
+    SETTING_ID = 'sync_watched_status'
 
     def __init__(self, nfsession: 'NFSessionOperations', msl_handler: 'MSLHandler',
                  directory_builder: 'DirectoryBuilder'):
@@ -45,7 +45,7 @@ class AMVideoEvents(ActionManager):
         self.allow_request_update_loco = False
 
     def __str__(self):
-        return 'enabled={}'.format(self.enabled)
+        return f'enabled={self.enabled}'
 
     def initialize(self, data):
         if self.videoid.mediatype not in [common.VideoId.MOVIE, common.VideoId.EPISODE]:
@@ -202,5 +202,5 @@ class AMVideoEvents(ActionManager):
 
 def _get_manifest(videoid):
     """Get the manifest from cache"""
-    cache_identifier = get_esn() + '_' + videoid.value
+    cache_identifier = f'{get_esn()}_{videoid.value}'
     return G.CACHE.get(CACHE_MANIFESTS, cache_identifier)

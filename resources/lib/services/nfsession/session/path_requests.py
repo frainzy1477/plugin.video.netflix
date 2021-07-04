@@ -53,17 +53,9 @@ class SessionPathRequests(SessionAccess):
         # multiple path requests will be executed with forward shifting range selectors
         # and the results will be combined into one path response.
         response_type, length_args = length_params
-        context_name = length_args[0]
+        # context_name = length_args[0]
         response_length = apipaths.LENGTH_ATTRIBUTES[response_type]
-
-        # Note: when the request is made with 'genres' or 'seasons' context,
-        #   the response strangely does not respect the number of objects
-        #   requested, returning 1 more item, i couldn't understand why
-        if context_name in ['genres', 'seasons']:
-            request_size -= 1
         response_size = request_size + 1
-        if context_name in ['genres', 'seasons']:
-            response_size += 1
 
         number_of_requests = 100 if no_limit_req else int(G.ADDON.getSettingInt('page_results') / 45)
         perpetual_range_start = int(perpetual_range_start) if perpetual_range_start else 0
@@ -123,7 +115,7 @@ class SessionPathRequests(SessionAccess):
         return path_response
 
     @measure_exec_time_decorator(is_immediate=True)
-    def callpath_request(self, callpaths, params=None, path_suffixs=None):
+    def callpath_request(self, callpaths, params=None, path_suffixs=None, path=None):
         """Perform a callPath request against the Shakti API"""
         LOG.debug('Executing callPath request: {} params: {} path_suffixs: {}',
                   callpaths, params, path_suffixs)
@@ -141,6 +133,8 @@ class SessionPathRequests(SessionAccess):
             #          if the request have wrong data will raise error 401
             #          if the parameters are not formatted correctly will raise error 401
             data += '&param=' + '&param='.join(params)
+        if path:
+            data += '&path=' + json.dumps(path, separators=(',', ':'))
         if path_suffixs:
             data += '&pathSuffix=' + '&pathSuffix='.join(
                 json.dumps(path_suffix, separators=(',', ':')) for path_suffix in path_suffixs)
